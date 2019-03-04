@@ -1,0 +1,7 @@
+﻿<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove($(MSBuildThisFile), $(MSBuildThisFileDirectory)../))" />
+
+  <PropertyGroup>
+    <OutputPath>$(MSBuildThisFileDirectory)\..\..\..\..\out\InformationManager\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+</Project>
