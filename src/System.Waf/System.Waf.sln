@@ -37,6 +37,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BookLibrary", "BookLibrary", "{1617BA08-7FFF-4C8A-9C90-BC0EDB577FA3}"
 	ProjectSection(SolutionItems) = preProject
 		Samples\BookLibrary\BookLibrary.docx = Samples\BookLibrary\BookLibrary.docx
+		Samples\BookLibrary\Directory.Build.props = Samples\BookLibrary\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InformationManager", "InformationManager", "{1CEBD406-B6C5-4639-A9AA-5F8C850F3A6D}"
