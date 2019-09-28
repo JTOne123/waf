@@ -1,9 +1,12 @@
-﻿using System.Waf.Applications;
+﻿using System.Threading.Tasks;
+using System.Waf.Applications;
 
-namespace Jbe.NewsReader.Applications.Views
+namespace Waf.NewsReader.Applications.Views
 {
     public interface IShellView : IView
     {
-        void Show();
+        Task PushAsync(object page);
+
+        Task PopAsync();
     }
 }

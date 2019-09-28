@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Waf.Foundation;
 
-namespace Jbe.NewsReader.Domain.Foundation
+namespace Waf.NewsReader.Domain.Foundation
 {
     public class ObservableGroupedListView<TKey, TElement> : ObservableListViewBase<ObservableGroupingView<TKey, TElement>>, IDisposable
     {
@@ -15,7 +15,6 @@ namespace Jbe.NewsReader.Domain.Foundation
         private readonly INotifyCollectionChanged originalObservableCollection;
         private Predicate<TElement> filter;
         private volatile bool isDisposed;
-
 
         public ObservableGroupedListView(IEnumerable<TElement> originalList, Func<IEnumerable<TElement>, IEnumerable<IGrouping<TKey, TElement>>> createGrouping) 
             : this(originalList, createGrouping, null, null)
@@ -40,7 +39,6 @@ namespace Jbe.NewsReader.Domain.Foundation
             }
         }
 
-
         public Predicate<TElement> Filter
         {
             get => filter;
@@ -53,7 +51,6 @@ namespace Jbe.NewsReader.Domain.Foundation
                 }
             }
         }
-
 
         public void Refresh()
         {
@@ -109,7 +106,6 @@ namespace Jbe.NewsReader.Domain.Foundation
         {
             UpdateInnerList();
         }
-
 
 
         private sealed class InnerListKeyComparer : IEqualityComparer<ObservableGroupingView<TKey, TElement>>

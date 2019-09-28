@@ -1,97 +1,75 @@
-﻿using System.Waf.Presentation.Controls;
-using Jbe.NewsReader.Applications.ViewModels;
-using Jbe.NewsReader.Applications.Views;
-using System;
-using System.Composition;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Jbe.NewsReader.Presentation.Controls;
-using System.Linq;
+﻿using System.Threading.Tasks;
+using System.Waf.Foundation;
+using Waf.NewsReader.Applications.DataModels;
+using Waf.NewsReader.Applications.ViewModels;
+using Waf.NewsReader.Applications.Views;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
 
-namespace Jbe.NewsReader.Presentation.Views
+namespace Waf.NewsReader.Presentation.Views
 {
-    [Export(typeof(IShellView)), Shared]
-    public sealed partial class ShellView : IShellView
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class ShellView : IShellView
     {
-        private readonly Lazy<ShellViewModel> viewModel;
-
+        private ShellViewModel viewModel;
+        private bool isFirstPage = true;
 
         public ShellView()
         {
             InitializeComponent();
-            viewModel = new Lazy<ShellViewModel>(() => (ShellViewModel)DataContext);
-            Loaded += FirstTimeLoadedHandler;
-
-            contentView.RegisterPropertyChangedCallback(ContentPresenter.ContentProperty, ContentChanged);
-            previewView.RegisterPropertyChangedCallback(LazyContentPresenter.LazyContentProperty, PreviewChanged);
-            UpdatePreviewColumnWidth();
-
-            var window = CoreWindow.GetForCurrentThread();
-            UpdateHideBottomToolBar(window.Bounds.Width);
-            UpdateSelectionState(window.Bounds.Width);
-            window.SizeChanged += WindowSizeChanged;
-            SystemNavigationManager.GetForCurrentView().BackRequested += SystemNavigationManagerBackRequested;
         }
 
-
-        public ShellViewModel ViewModel => viewModel.Value;
-
-
-        public void Show()
+        public object DataContext
         {
-            Window.Current.Content = this;
-            Window.Current.Activate();
+            get => BindingContext;
+            set => BindingContext = value;
         }
 
-        private void FirstTimeLoadedHandler(object sender, RoutedEventArgs e)
+        public async Task PushAsync(object page)
         {
-            Loaded -= FirstTimeLoadedHandler;
-
-            ViewModel.NavigateBackCommand.CanExecuteChanged += NavigateBackCommandCanExecuteChanged;
-            UpdateBackButtonVisibility();
-        }
-
-        private void WindowSizeChanged(CoreWindow sender, WindowSizeChangedEventArgs args)
-        {
-            UpdateHideBottomToolBar(args.Size.Width);
-            UpdateSelectionState(args.Size.Width);
-        }
-        
-        private void UpdateHideBottomToolBar(double windowWidth) => ToolBarHelper.SetHideBottomToolBar(navigationSplitView, windowWidth > 600);
-
-        private void UpdateSelectionState(double windowWidth) => SelectionStateHelper.SetIsSinglePageViewSize(this, windowWidth < 720);
-
-        private void ContentChanged(DependencyObject obj, DependencyProperty property) => navigationSplitView.IsPaneOpen = false;
-        
-        private void PreviewChanged(DependencyObject obj, DependencyProperty property) => UpdatePreviewColumnWidth();
-
-        private void UpdatePreviewColumnWidth()
-        {
-            previewColumn.Width = previewView.LazyContent == null ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
-        }
-
-        private void NavigateBackCommandCanExecuteChanged(object sender, EventArgs e) => UpdateBackButtonVisibility();
-
-        private void UpdateBackButtonVisibility()
-        {
-            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = ViewModel.NavigateBackCommand.CanExecute(null)
-                ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
-        }
-
-        private void SystemNavigationManagerBackRequested(object sender, BackRequestedEventArgs e)
-        {
-            if (!e.Handled && ViewModel.NavigateBackCommand.CanExecute(null))
+            bool wasFirstPage = isFirstPage;
+            isFirstPage = false;
+            var navi = Detail.Navigation;
+            var idx = navi.NavigationStack.IndexOf(page);
+            if (idx >= 0)
             {
-                e.Handled = true;
-                ViewModel.NavigateBackCommand.Execute(null);
+                if (idx == navi.NavigationStack.Count - 1) return;
+                for (int i = 0; i < navi.NavigationStack.Count - idx - 2; i++) navi.RemovePage(navi.NavigationStack[navi.NavigationStack.Count - 2]);
+                await navi.PopAsync();
+            }
+            else await navi.PushAsync((Page)page);
+            if (wasFirstPage) navi.RemovePage(navi.NavigationStack[0]);  // Remove initial empty page from navigation stack
+        }
+
+        public Task PopAsync()
+        {
+            return Detail.Navigation.PopAsync();
+        }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+            viewModel = (ShellViewModel)BindingContext;
+            var navigationPage = new NavigationPage(new Page());  // Add empty page; needed by MasterDetailPage when shown
+            Detail = navigationPage;
+        }
+
+        private void NavigationItemTapped(object sender, ItemTappedEventArgs e)
+        {
+            if (e.Item is NavigationItem item)
+            {
+                if (item.Command != null)
+                {
+                    item.Command.Execute(null);
+                    if (MasterBehavior != MasterBehavior.Split) IsPresented = false;
+                }
             }
         }
 
-        private static bool IsNavigationSelected(NavigationItem selectedNavigationItem, string navigationItems)
+        private void FeedsItemTapped(object sender, ItemTappedEventArgs e)
         {
-            var items = navigationItems.Split(';').Select(x => Enum.Parse(typeof(NavigationItem), x.Trim()));
-            return items.Any(x => x.Equals(selectedNavigationItem));
+            viewModel.ShowFeedViewCommand.Execute(e.Item);
+            if (MasterBehavior != MasterBehavior.Split) IsPresented = false;
         }
     }
 }

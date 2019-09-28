@@ -1,4 +1,4 @@
-﻿namespace Jbe.NewsReader.Domain
+﻿namespace Waf.NewsReader.Domain
 {
     public class UserAccount
     {
@@ -7,7 +7,6 @@
             Id = id;
             UserName = userName;
         }
-
 
         public string Id { get; }
 

@@ -1,5 +1,4 @@
-﻿using Jbe.NewsReader.Domain.Foundation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -7,7 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Waf.Foundation;
 
-namespace Jbe.NewsReader.Domain
+namespace Waf.NewsReader.Domain
 {
     [DataContract]
     public class FeedManager : Model, IDataManager
@@ -16,19 +15,17 @@ namespace Jbe.NewsReader.Domain
         [DataMember] private TimeSpan? itemLifetime;
         [DataMember] private uint? maxItemsLimit;
 
-
         public FeedManager()
         {
             // Note: Serializer does not call the constructor.
             feeds = new ObservableCollection<Feed>
             {
-                new Feed(new Uri("http://blogs.windows.com/buildingapps/feed/")),
+                new Feed(new Uri("https://devblogs.microsoft.com/xamarin/feed/")),
             };
             ItemLifetime = TimeSpan.FromDays(365);
             MaxItemsLimit = 250;
             Initialize();
         }
-
 
         public ObservableCollection<Feed> Feeds => feeds;
 
@@ -43,7 +40,6 @@ namespace Jbe.NewsReader.Domain
             get => maxItemsLimit;
             set => SetProperty(ref maxItemsLimit, value);
         }
-
 
         public void Merge(FeedManager newFeedManager)
         {

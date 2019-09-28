@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Jbe.NewsReader.Applications.Services
+namespace Waf.NewsReader.Applications.Services
 {
     public interface INetworkInfoService : INotifyPropertyChanged
     {

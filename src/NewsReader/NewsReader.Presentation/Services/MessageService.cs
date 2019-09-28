@@ -1,51 +1,19 @@
-﻿using Jbe.NewsReader.Applications.Services;
-using Jbe.NewsReader.Applications.ViewModels;
-using System;
-using System.Composition;
-using System.Threading.Tasks;
-using Windows.UI.Popups;
+﻿using System.Threading.Tasks;
+using Waf.NewsReader.Applications.Services;
+using Xamarin.Forms;
 
-namespace Jbe.NewsReader.Presentation.Services
+namespace Waf.NewsReader.Presentation.Services
 {
-    [Export(typeof(IMessageService)), Export, Shared]
-    internal class MessageService : IMessageService
+    public class MessageService : IMessageService
     {
-        private readonly Lazy<ShellViewModel> shellViewModel;
-
-
-        [ImportingConstructor]
-        public MessageService(Lazy<ShellViewModel> shellViewModel)
+        public Task ShowMessage(string message)
         {
-            this.shellViewModel = shellViewModel;
+            return Application.Current.MainPage.DisplayAlert("Info", message, "OK");
         }
 
-
-        public void ShowMessage(string message)
+        public Task<bool> ShowYesNoQuestion(string message)
         {
-            shellViewModel.Value.ShowMessage(message, null);
+            return Application.Current.MainPage.DisplayAlert("Question", message, "Yes", "No");
         }
-
-        public Task ShowMessageDialogAsync(string message)
-        {
-            var messageDialog = new MessageDialog(message);
-            var closeCommand = new UICommand(ResourceService.GetString("Close"));
-            messageDialog.Commands.Add(closeCommand);
-            messageDialog.DefaultCommandIndex = 0;
-            messageDialog.CancelCommandIndex = 0;
-            return messageDialog.ShowAsync().AsTask();
-        }
-
-        public async Task<bool> ShowYesNoQuestionDialogAsync(string message)
-        {
-            var messageDialog = new MessageDialog(message);
-            var yesCommand = new UICommand(ResourceService.GetString("Yes"));
-            var noCommand = new UICommand(ResourceService.GetString("No"));
-            messageDialog.Commands.Add(yesCommand);
-            messageDialog.Commands.Add(noCommand);
-            messageDialog.DefaultCommandIndex = 0;
-            messageDialog.CancelCommandIndex = 1;
-            var result = await messageDialog.ShowAsync().AsTask().ConfigureAwait(false);
-            return result == yesCommand;
-        }    
     }
 }

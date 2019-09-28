@@ -1,22 +1,35 @@
-﻿<Application
-    x:Class="Jbe.NewsReader.Presentation.App"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Application xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:c="clr-namespace:Waf.NewsReader.Presentation.Converters"
+             x:Class="Waf.NewsReader.Presentation.App">
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light" Source="Resources/LightThemeResources.xaml" />
-                <ResourceDictionary x:Key="Dark" Source="Resources/DarkThemeResources.xaml" />
-            </ResourceDictionary.ThemeDictionaries>
+            <Color x:Key="ErrorBackgroundColor">#FFDA8A8A</Color>
             
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/ConverterResources.xaml"/>
-                <ResourceDictionary Source="Resources/ListViewItemResources.xaml"/>
-                <ResourceDictionary Source="Resources/ControlResources.xaml"/>
-                <ResourceDictionary Source="Resources/FormResources.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
+            <OnPlatform x:Key="MaterialFont" x:TypeArguments="x:String">
+                <On Platform="iOS" Value="Material Design Icons" />
+                <On Platform="Android" Value="materialdesignicons-webfont.ttf#" />
+                <On Platform="UWP" Value="Assets/Fonts/materialdesignicons-webfont.ttf#Material Design Icons" />
+            </OnPlatform>
+
+            <c:ErrorsToMessageConverter x:Key="ErrorsToMessageConverter"/>
+            <c:LocalizeDisplayItemLifetimeConverter x:Key="LocalizeDisplayItemLifetimeConverter"/>
+            <c:LocalizeDisplayMaxItemsLimitConverter x:Key="LocalizeDisplayMaxItemsLimitConverter"/>
+            <c:MarkAsReadConverter x:Key="MarkAsReadConverter"/>
+            <c:NullToBoolConverter x:Key="NullToBoolConverter"/>
+            
+            <Style TargetType="Label">
+                <Setter Property="FontSize" Value="15"/>
+            </Style>
+            <Style x:Key="Title" TargetType="Label">
+                <Setter Property="FontSize" Value="18"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+            </Style>
+            <Style x:Key="Subtitle" TargetType="Label">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
-    
 </Application>

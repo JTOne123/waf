@@ -1,13 +1,11 @@
 ﻿using System.Threading.Tasks;
 
-namespace Jbe.NewsReader.Applications.Services
+namespace Waf.NewsReader.Applications.Services
 {
     public interface IMessageService
     {
-        void ShowMessage(string message);
+        Task ShowMessage(string message);
 
-        Task ShowMessageDialogAsync(string message);
-
-        Task<bool> ShowYesNoQuestionDialogAsync(string message);
+        Task<bool> ShowYesNoQuestion(string message);
     }
 }

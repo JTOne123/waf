@@ -1,123 +1,92 @@
-﻿using Jbe.NewsReader.Applications.ViewModels;
-using Jbe.NewsReader.Applications.Views;
-using Jbe.NewsReader.Domain;
-using Jbe.NewsReader.Presentation.Controls;
-using System;
-using System.ComponentModel;
-using System.Composition;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Waf.NewsReader.Applications.ViewModels;
+using Waf.NewsReader.Applications.Views;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
 
-namespace Jbe.NewsReader.Presentation.Views
+namespace Waf.NewsReader.Presentation.Views
 {
-    [Export(typeof(IFeedItemView)), Shared]
-    public sealed partial class FeedItemView : IFeedItemView
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class FeedItemView : IFeedItemView
     {
-        private static readonly Uri blankUri = new Uri("about:blank");
-        private readonly Lazy<FeedItemViewModel> viewModel;
-        private readonly WebView webView;
-        private bool isLoaded;
-        private FeedItem feedItem;
-        
+        private FeedItemViewModel viewModel;
+        private TaskCompletionSource<object> webViewNavigated;
+        private CancellationTokenSource cancellationTokenSource;
 
         public FeedItemView()
         {
             InitializeComponent();
-            webView = new WebView(WebViewExecutionMode.SeparateThread) { Visibility = Visibility.Collapsed };
-            webViewPresenter.Content = webView;
-            viewModel = new Lazy<FeedItemViewModel>(() => (FeedItemViewModel)DataContext);
-            FrameworkElementHelper.RegisterSafeLoadedCallback(this, LoadedHandler);
-            FrameworkElementHelper.RegisterSafeUnloadedCallback(this, UnloadedHandler);
-            webView.NavigationStarting += WebViewNavigationStarting;
-            webView.NavigationCompleted += WebViewNavigationCompleted;
         }
 
-
-        public FeedItemViewModel ViewModel => viewModel.Value;
-
-        private FeedItem FeedItem
+        public object DataContext
         {
-            get => feedItem;
-            set
+            get => BindingContext;
+            set => BindingContext = value;
+        }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+            viewModel = (FeedItemViewModel)BindingContext;
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            cancellationTokenSource = new CancellationTokenSource();
+            webView.Source = viewModel.FeedItem.Uri;
+        }
+
+        protected override void OnDisappearing()
+        {
+            cancellationTokenSource.Cancel();
+            webView.Source = null;
+            base.OnDisappearing();
+        }
+
+        protected override bool OnBackButtonPressed()
+        {
+            if (webView.CanGoBack)
             {
-                if (feedItem != value)
+                webView.GoBack();
+                return true;
+            }
+            else return base.OnBackButtonPressed();
+        }
+
+        private async void WebViewNavigating(object sender, WebNavigatingEventArgs e)
+        {
+            webViewNavigated = new TaskCompletionSource<object>();
+            activityIndicator.IsVisible = true;
+            activityIndicator.IsRunning = true;
+            var delayTask = Task.Delay(TimeSpan.FromSeconds(5), cancellationTokenSource.Token);
+            try
+            {
+                await Task.WhenAny(delayTask, webViewNavigated.Task);
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                activityIndicator.IsRunning = false;
+                activityIndicator.IsVisible = false;
+            }
+
+            try
+            {
+                await delayTask;
+                if (viewModel.FeedItem != null)
                 {
-                    if (feedItem != null)
-                    {
-                        feedItem.PropertyChanged -= FeedItemPropertyChanged;
-                    }
-                    feedItem = value;
-                    UpdateWebView();
-                    if (feedItem != null)
-                    {
-                        feedItem.PropertyChanged += FeedItemPropertyChanged;
-                    }
+                    viewModel.FeedItem.MarkAsRead = true;
                 }
             }
-        }
-        
-
-        private void LoadedHandler(object sender, RoutedEventArgs e)
-        {
-            isLoaded = true;
-            ViewModel.SelectionService.PropertyChanged += SelectionServicePropertyChanged;
-            FeedItem = ViewModel.SelectionService.SelectedFeedItem;
+            catch (OperationCanceledException) { }
         }
 
-        private void UnloadedHandler(object sender, RoutedEventArgs e)
+        private void WebViewNavigated(object sender, WebNavigatedEventArgs e)
         {
-            ViewModel.SelectionService.PropertyChanged -= SelectionServicePropertyChanged;
-            FeedItem = null;
-            isLoaded = false;  // set this flag at last
-        }
-
-        private void SelectionServicePropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ViewModel.SelectionService.SelectedFeedItem))
-            {
-                FeedItem = ViewModel.SelectionService.SelectedFeedItem;
-            }
-        }
-
-        private void FeedItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(FeedItem.Uri))
-            {
-                UpdateWebView();
-            }
-        }
-
-        private void UpdateWebView()
-        {
-            webView.Visibility = FeedItem != null ? Visibility.Visible : Visibility.Collapsed;
-            var uri = FeedItem?.Uri;
-            if (uri == null)
-            {
-                webView.Navigate(blankUri);
-            }
-            else if (webView.Source != uri)
-            {
-                webView.Navigate(uri);
-            }
-        }
-
-        private void WebViewNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs e)
-        {
-            if (!isLoaded)
-            {
-                e.Cancel = true;
-                return;
-            }
-            loadingProgressBar.Visibility = Visibility.Visible;
-        }
-
-        private void WebViewNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs e)
-        {
-            loadingProgressBar.Visibility = Visibility.Collapsed;
-            if (ViewModel.SelectionService.SelectedFeedItem != null)
-            {
-                ViewModel.SelectionService.SelectedFeedItem.MarkAsRead = true;
-            }
+            webViewNavigated.TrySetResult(null);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Waf.Applications;
 
-namespace Jbe.NewsReader.Applications.Views
+namespace Waf.NewsReader.Applications.Views
 {
     public interface IFeedItemView : IView
     {

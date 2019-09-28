@@ -1,93 +1,53 @@
-﻿using Jbe.NewsReader.Applications.Controllers;
-using Jbe.NewsReader.Applications.Services;
-using Jbe.NewsReader.Applications.ViewModels;
-using Jbe.NewsReader.ExternalServices;
+﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 using System;
-using System.Collections.Generic;
-using System.Composition.Hosting;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.ExtendedExecution;
-using Windows.Globalization;
-using Windows.Storage;
-using Windows.System.UserProfile;
-using Windows.UI.Xaml;
+using System.Diagnostics;
+using Waf.NewsReader.Applications;
+using Waf.NewsReader.Applications.Controllers;
+using Xamarin.Forms;
 
-namespace Jbe.NewsReader.Presentation
+namespace Waf.NewsReader.Presentation
 {
-    sealed partial class App
+    public partial class App : Application
     {
-        private IEnumerable<IAppController> appControllers;
-        private bool isInitialized;
+        private readonly IAppController appController;
 
-
-        public App()
+        public App(Lazy<IAppController> appController)
         {
-            var themeSettings = ApplicationData.Current.LocalSettings.Values[SettingsKey.Theme];
-            if (themeSettings != null)
-            {
-                RequestedTheme = (ApplicationTheme)themeSettings;
-            }
-            var languageSettings = ApplicationData.Current.LocalSettings.Values[SettingsKey.Language] as string;
-            if (string.IsNullOrEmpty(languageSettings))
-            {
-                ApplicationLanguages.PrimaryLanguageOverride = GlobalizationPreferences.Languages[0];
-            }
-            else
-            {
-                ApplicationLanguages.PrimaryLanguageOverride = languageSettings;
-                CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(languageSettings);
-                CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(languageSettings);
-            }
-
             InitializeComponent();
-            Suspending += OnSuspending;
-            Resuming += OnResuming;
+            this.appController = appController.Value;
+            MainPage = (Page)this.appController.MainView;
         }
-        
 
-        private void Initialize()
+        public static void InitializeLogging(TraceSource system)
         {
-            if (isInitialized) { return; }
-            isInitialized = true;
-            
-            var configuration = new ContainerConfiguration()
-                .WithAssembly(typeof(ShellViewModel).GetTypeInfo().Assembly)
-                .WithAssembly(typeof(AppInfoService).GetTypeInfo().Assembly)
-                .WithAssembly(typeof(App).GetTypeInfo().Assembly);
-            var container = configuration.CreateContainer();
-
-            // Initialize and run all module controllers
-            // TODO: Dirty hack because of a serious bug in MEF2 https://github.com/dotnet/corefx/issues/18789
-            appControllers = container.GetExports<INavigationService>().Cast<IAppController>().ToArray();
-            foreach (var appController in appControllers) { appController.Initialize(); }
-            foreach (var appController in appControllers) { appController.Run(); }
+            system.Switch.Level = SourceLevels.All;
+            Log.Default.Switch.Level = SourceLevels.All;
         }
 
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override void OnStart()
         {
-            Initialize();
+            Log.Default.Info("App started");
+            string appSecret = null;
+            GetAppCenterSecret(ref appSecret);
+            if (appSecret != null) AppCenter.Start(appSecret, typeof(Analytics), typeof(Crashes));
+
+            appController.Start();
         }
 
-        private void OnResuming(object sender, object e)
+        protected override void OnSleep()
         {
-            foreach (var appController in appControllers) { appController.Resuming(); }
+            Log.Default.Info("App sleep");
+            appController.Sleep();
         }
 
-        private async void OnSuspending(object sender, SuspendingEventArgs e)
+        protected override void OnResume()
         {
-            var deferral = e.SuspendingOperation.GetDeferral();
-            using (var session = new ExtendedExecutionSession())
-            {
-                session.Reason = ExtendedExecutionReason.SavingData;
-                var requestTask = session.RequestExtensionAsync().AsTask();
-                await Task.WhenAll(appControllers.Select(x => x.SuspendingAsync()).Concat(new[] { requestTask }).ToArray()).ConfigureAwait(false);
-            }
-            deferral.Complete();
+            Log.Default.Info("App resume");
+            appController.Resume();
         }
+
+        static partial void GetAppCenterSecret(ref string appSecret);
     }
 }

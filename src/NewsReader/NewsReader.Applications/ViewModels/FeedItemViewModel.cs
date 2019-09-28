@@ -1,23 +1,23 @@
-﻿using Jbe.NewsReader.Applications.Services;
-using Jbe.NewsReader.Applications.Views;
-using System.Composition;
-using System.Waf.Applications;
-using System.Windows.Input;
+﻿using System.Windows.Input;
+using Waf.NewsReader.Applications.Views;
+using Waf.NewsReader.Domain;
 
-namespace Jbe.NewsReader.Applications.ViewModels
+namespace Waf.NewsReader.Applications.ViewModels
 {
-    [Export, Shared]
-    public class FeedItemViewModel : ViewModelCore<IFeedItemView>
+    public class FeedItemViewModel : ViewModel<IFeedItemView>
     {
-        [ImportingConstructor]
-        public FeedItemViewModel(IFeedItemView view, SelectionService selectionService) : base(view)
+        private FeedItem feedItem;
+
+        public FeedItemViewModel(IFeedItemView view) : base(view)
         {
-            SelectionService = selectionService;
         }
 
+        public ICommand LaunchBrowserCommand { get; set; }
 
-        public SelectionService SelectionService { get; }
-
-        public ICommand LaunchWebBrowserCommand { get; set; }
+        public FeedItem FeedItem
+        {
+            get => feedItem;
+            set => SetProperty(ref feedItem, value);
+        }
     }
 }

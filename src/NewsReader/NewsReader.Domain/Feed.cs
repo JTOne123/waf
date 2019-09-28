@@ -3,25 +3,26 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Waf.Foundation;
 
-namespace Jbe.NewsReader.Domain
+namespace Waf.NewsReader.Domain
 {
     [DataContract]
-    public class Feed : Model
+    public class Feed : ValidatableModel
     {
         [DataMember] private readonly Uri uri;
         [DataMember] private readonly ObservableCollection<FeedItem> items;
         [DataMember] private string name;
+        private string title;
         private ReadOnlyObservableList<FeedItem> readOnlyItems;
         private int unreadItemsCount;
         private bool isLoading;
         private Exception loadError;
         private string loadErrorMessage;
         private IDataManager dataManager;
-
 
         public Feed(Uri uri)
         {
@@ -31,13 +32,25 @@ namespace Jbe.NewsReader.Domain
             Initialize();
         }
 
-
         public Uri Uri => uri;
 
+        [Required]
         public string Name
         {
-            get => name ?? (name = uri.ToString());
-            set => SetProperty(ref name, value);
+            get => name;
+            set => SetPropertyAndValidate(ref name, value);
+        }
+
+        public string Title
+        {
+            get => title;
+            set
+            {
+                if (SetProperty(ref title, value))
+                {
+                    if (string.IsNullOrEmpty(Name)) Name = value;
+                }
+            }
         }
 
         public IReadOnlyObservableList<FeedItem> Items => readOnlyItems ?? (readOnlyItems = new ReadOnlyObservableList<FeedItem>(items));
@@ -138,6 +151,7 @@ namespace Jbe.NewsReader.Domain
                 item.PropertyChanged += FeedItemPropertyChanged;
             }
             UpdateUnreadItemsCount();
+            Validate();
         }
 
         private void DataManagerPropertyChanged(object sender, PropertyChangedEventArgs e)

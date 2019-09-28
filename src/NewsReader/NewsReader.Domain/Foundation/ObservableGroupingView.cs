@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Waf.Foundation;
 
-namespace Jbe.NewsReader.Domain.Foundation
+namespace Waf.NewsReader.Domain.Foundation
 {
     public class ObservableGroupingView<TKey, TElement> : ObservableListViewBase<TElement>, IGrouping<TKey, TElement>
     {
@@ -15,7 +15,6 @@ namespace Jbe.NewsReader.Domain.Foundation
         public TKey Key { get; }
 
         internal new List<TElement> InnerList => base.InnerList;
-
 
         internal new void Insert(int newItemIndex, TElement newItem)
         {

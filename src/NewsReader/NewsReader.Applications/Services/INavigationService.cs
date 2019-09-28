@@ -1,9 +1,12 @@
-﻿using System;
+﻿using System.Threading.Tasks;
+using Waf.NewsReader.Applications.ViewModels;
 
-namespace Jbe.NewsReader.Applications.Services
+namespace Waf.NewsReader.Applications.Services
 {
     public interface INavigationService
     {
-        event EventHandler Navigated;
+        Task Navigate(IViewModel viewModel);
+
+        Task NavigateBack();
     }
 }

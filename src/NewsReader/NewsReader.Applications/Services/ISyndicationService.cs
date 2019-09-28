@@ -2,16 +2,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Jbe.NewsReader.Applications.Services
+namespace Waf.NewsReader.Applications.Services
 {
     public interface ISyndicationService
     {
-        ISyndicationClient CreateClient();
-    }
-
-    public interface ISyndicationClient
-    {
-        Task<FeedDto> RetrieveFeedAsync(Uri uri);
+        Task<FeedDto> RetrieveFeed(Uri uri);
     }
 
     public sealed class FeedDto
@@ -44,22 +39,5 @@ namespace Jbe.NewsReader.Applications.Services
         public string Name { get; }
 
         public string Description { get; }
-    }
-
-    public enum SyndicationServiceError
-    {
-        Unknown = 0,
-        NotModified = 304,  // Indicates the resource has not been modified since last requested.
-    }
-
-    public class SyndicationServiceException : Exception
-    {
-        public SyndicationServiceException(SyndicationServiceError error, Exception innerException) 
-            : base(nameof(SyndicationServiceError) + ": " + error, innerException)
-        {
-            Error = error;
-        }
-
-        public SyndicationServiceError Error { get; }
     }
 }

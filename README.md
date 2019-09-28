@@ -11,14 +11,11 @@ The Win Application Framework (WAF) is a lightweight Framework that helps you to
 * The [Wiki](https://github.com/jbe2277/waf/wiki) provides further guidance.
 * The fastest way to create a WAF project is by using the [WAF Visual Studio Project Template](https://marketplace.visualstudio.com/items?itemName=jbe2277.WAFProjectTemplate). Please update the WAF NuGet packages to the latest stable version after project creation.
 
-## Version 4
+## Supported Platforms
 
-Starting with version 4 the framework comes with the new name Win Application Framework instead of WPF Application Framework. This rename shows that the framework supports now various application types:
--	WPF (Windows Presentation Foundation)
--	UWP (Universal Windows Platform)
--	Core (Basic support for all .NET based applications)
-
-Older versions of WAF 1.0 - 3.2 can be found at CodePlex: http://waf.codeplex.com
+-	***.Core** *(.NET Standard 2.0 and .NET Framework 4.6.1)*: Support for all .NET based applications.
+-	***.Wpf** *(.NET Framework 4.6.1)*: Extended support for Windows Presentation Foundation (WPF).
+- \[*Experimental*\] .NET Core 3.0 with WPF: See [Git Branch: netcoreapp3.0](https://github.com/jbe2277/waf/tree/netcoreapp3.0)
 
 ## Features
 
@@ -26,6 +23,7 @@ Older versions of WAF 1.0 - 3.2 can be found at CodePlex: http://waf.codeplex.co
  - *Foundation*
     - `Cache`: Provides support for [caching](https://github.com/jbe2277/waf/wiki/Cache-Pattern) a value.
     - `Model`: Base class that implements [INotifyPropertyChanged](https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.inotifypropertychanged).
+    - `ObservableListViewCore`: [Provide change notifications for sorting and filtering.](https://github.com/jbe2277/waf/wiki/ObservableListView%3A-Provide-change-notifications-for-sorting-and-filtering)
     - `SynchronizingCollectionCore`: Represents a collection that synchronizes all its items with the items of the specified original collection.
     - `ThrottledAction`: [Throttling](https://github.com/jbe2277/waf/wiki/Throttling-to-improve-responsiveness) of multiple method calls to improve the responsiveness of an application.
     - `ValidatableModel`: Base class for a model that supports validation by implementing [INotifyDataErrorInfo](https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.inotifydataerrorinfo).
@@ -39,6 +37,7 @@ Older versions of WAF 1.0 - 3.2 can be found at CodePlex: http://waf.codeplex.co
     - `DataErrorInfoSupport`: Helper class for working with the legacy [IDataErrorInfo](https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.idataerrorinfo) interface.
  - *Applications*
     -	`ApplicationInfo`: Provides information about the running application.
+    - `ObservableListView`: [Same as ObservableListViewCore but using weak event handlers.](https://github.com/jbe2277/waf/wiki/ObservableListView%3A-Provide-change-notifications-for-sorting-and-filtering)
     - `SynchronizingCollection`: Same as SynchronizingCollectionCore but using [weak event](https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/weak-event-patterns) handlers.
     - `ViewModel`: [ViewModel](https://github.com/jbe2277/waf/wiki/Model-View-ViewModel-Pattern) base class which sets the DataContext delayed via the Dispatcher.
  - *Presentation*

@@ -1,4 +1,4 @@
-﻿using Jbe.NewsReader.Domain;
+﻿using Waf.NewsReader.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
@@ -10,21 +10,12 @@ namespace Test.NewsReader.Domain
     public class FeedTest : DomainTest
     {
         [TestMethod]
-        public void NameTest()
-        {
-            var feed = new Feed(new Uri("http://www.test.com/rss/feed"));
-            Assert.AreEqual("http://www.test.com/rss/feed", feed.Name);
-            feed.Name = "name";
-            Assert.AreEqual("name", feed.Name);
-        }
-
-        [TestMethod]
         public void IsLoadingTest1() => IsLoadingCoreTest(false);
 
         [TestMethod]
         public void IsLoadingTest2() => IsLoadingCoreTest(true);
 
-        private void IsLoadingCoreTest(bool useSerializer)
+        private static void IsLoadingCoreTest(bool useSerializer)
         {
             var feed1 = new Feed(new Uri("http://www.test.com/rss/feed"));
             var feed2 = new Feed(new Uri("http://www.test.com/rss/feed"));
@@ -65,7 +56,7 @@ namespace Test.NewsReader.Domain
         [TestMethod]
         public void UpdateItemsTest4() => UpdateItemsCoreTest(true, true);
 
-        private void UpdateItemsCoreTest(bool cloneItemsBeforeInsert, bool useSerializer)
+        private static void UpdateItemsCoreTest(bool cloneItemsBeforeInsert, bool useSerializer)
         {
             var feed = new Feed(new Uri("http://www.test.com/rss/feed"));
             feed.UpdateItems(new[] {
@@ -102,7 +93,7 @@ namespace Test.NewsReader.Domain
         [TestMethod]
         public void UnreadItemsCountTest2() => UnreadItemsCountCoreTest(true);
 
-        private void UnreadItemsCountCoreTest(bool useSerializer)
+        private static void UnreadItemsCountCoreTest(bool useSerializer)
         {
             var feed = new Feed(new Uri("http://www.test.com/rss/feed"));
             var feedManager = new FeedManager();
@@ -126,7 +117,7 @@ namespace Test.NewsReader.Domain
         [TestMethod]
         public void TrimItemsListWithMaxItemsLimitTest2() => TrimItemsListWithMaxItemsLimitTest(true);
 
-        private void TrimItemsListWithMaxItemsLimitTest(bool useSerializer)
+        private static void TrimItemsListWithMaxItemsLimitTest(bool useSerializer)
         {
             var feed = new Feed(new Uri("http://www.test.com/rss/feed"));
             feed = !useSerializer ? feed : SerializerHelper.Clone(feed);
@@ -160,7 +151,7 @@ namespace Test.NewsReader.Domain
         [TestMethod]
         public void TrimItemsListWithItemLifetimeTest2() => TrimItemsListWithItemLifetimeTest(false);
 
-        private void TrimItemsListWithItemLifetimeTest(bool useSerializer)
+        private static void TrimItemsListWithItemLifetimeTest(bool useSerializer)
         {
             var feed = new Feed(new Uri("http://www.test.com/rss/feed"));
             feed = !useSerializer ? feed : SerializerHelper.Clone(feed);
@@ -188,7 +179,7 @@ namespace Test.NewsReader.Domain
             Assert.IsTrue(new string[0].SequenceEqual(feed.Items.Select(x => x.Name)));
         }
 
-        private void UpdateFeedItems(Feed feed)
+        private static void UpdateFeedItems(Feed feed)
         {
             feed.UpdateItems(new[] {
                 new FeedItem(new Uri("http://www.test.com/rss/feed/1"), DateTimeOffset.Now - TimeSpan.FromDays(10), "name1", "desc"),

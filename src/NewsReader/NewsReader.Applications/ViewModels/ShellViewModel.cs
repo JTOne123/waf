@@ -1,96 +1,73 @@
-﻿using Jbe.NewsReader.Applications.Services;
-using Jbe.NewsReader.Applications.Views;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Composition;
-using System.Linq;
-using System.Waf.Applications;
-using System.Waf.Foundation;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using Waf.NewsReader.Applications.DataModels;
+using Waf.NewsReader.Applications.Services;
+using Waf.NewsReader.Applications.Views;
+using Waf.NewsReader.Domain;
 
-namespace Jbe.NewsReader.Applications.ViewModels
+namespace Waf.NewsReader.Applications.ViewModels
 {
-    [Export, Shared]
-    public class ShellViewModel : ViewModelCore<IShellView>
+    public class ShellViewModel : ViewModel<IShellView>, INavigationService
     {
-        private readonly ObservableCollection<KeyValuePair<string, Exception>> messages;
-        private object contentView;
-        private Lazy<object> lazyPreviewView;
-        private NavigationItem selectedNavigationItem;
-        
+        private NavigationItem selectedFooterMenu;
+        private IReadOnlyList<Feed> feeds;
+        private Feed selectedFeed;
 
-        [ImportingConstructor]
-        public ShellViewModel(IShellView view, IAccountInfoService accountInfoService, INetworkInfoService networkInfoService) : base(view)
+        public ShellViewModel(IShellView view, IAppInfoService appInfoService) : base(view)
         {
-            AccountInfoService = accountInfoService;
-            NetworkInfoService = networkInfoService;
-            messages = new ObservableCollection<KeyValuePair<string, Exception>>();
-            Messages = new ReadOnlyObservableList<KeyValuePair<string, Exception>>(messages);
-            CloseMessageCommand = new DelegateCommand(CloseMessage);
-            messages.CollectionChanged += MessagesCollectionChanged;
+            AppName = appInfoService.AppName;
         }
 
-        public IAccountInfoService AccountInfoService { get; }
+        public string AppName { get; }
 
-        public INetworkInfoService NetworkInfoService { get; }
+        public ICommand EditFeedCommand { get; set; }
 
-        public IReadOnlyObservableList<KeyValuePair<string, Exception>> Messages { get; }
+        public ICommand RemoveFeedCommand { get; set; }
 
-        public KeyValuePair<string, Exception> LastMessage => messages.LastOrDefault();
+        public ICommand ShowFeedViewCommand { get; set; }
 
-        public object ContentView
+        public IReadOnlyList<NavigationItem> FooterMenu { get; set; }
+
+        public NavigationItem SelectedFooterMenu
         {
-            get => contentView;
-            set => SetProperty(ref contentView, value);
+            get => selectedFooterMenu;
+            set
+            {
+                if (SetProperty(ref selectedFooterMenu, value) && selectedFooterMenu != null)
+                {
+                    SelectedFeed = null;
+                }
+            }
         }
 
-        public Lazy<object> LazyPreviewView
+        public IReadOnlyList<Feed> Feeds
         {
-            get => lazyPreviewView;
-            set => SetProperty(ref lazyPreviewView, value);
+            get => feeds;
+            set => SetProperty(ref feeds, value);
         }
 
-        public ICommand CloseMessageCommand { get; }
-
-        public ICommand NavigateBackCommand { get; set; }
-
-        public ICommand ShowNewsViewCommand { get; set; }
-
-        public ICommand ShowReviewViewCommand { get; set; }
-
-        public ICommand ShowSettingsViewCommand { get; set; }
-
-        public ICommand SignInCommand { get; set; }
-
-        public ICommand SignOutCommand { get; set; }
-
-        public NavigationItem SelectedNavigationItem
+        public Feed SelectedFeed
         {
-            get => selectedNavigationItem;
-            internal set => SetProperty(ref selectedNavigationItem, value);
+            get => selectedFeed;
+            set
+            {
+                if (SetProperty(ref selectedFeed, value) && SelectedFeed != null)
+                {
+                    SelectedFooterMenu = null;
+                }
+            }
         }
 
-
-        public void Show()
+        public Task Navigate(IViewModel viewModel)
         {
-            ViewCore.Show();
+            viewModel.Initialize();
+            return ViewCore.PushAsync(viewModel.View);
         }
 
-        public void ShowMessage(string message, Exception exception)
+        public Task NavigateBack()
         {
-            messages.Add(new KeyValuePair<string, Exception>(message, exception));
-        }
-
-        private void CloseMessage()
-        {
-            if (messages.Any()) { messages.RemoveAt(messages.Count - 1); }
-        }
-
-        private void MessagesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            RaisePropertyChanged(nameof(LastMessage));
+            return ViewCore.PopAsync();
         }
     }
 }
